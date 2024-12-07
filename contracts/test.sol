@@ -1,69 +1,67 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+/**
+ * WARNING: This contract contains several vulnerabilities and should never be used in production.
+ * It is solely for educational purposes to demonstrate poor practices and common pitfalls in Solidity.
+ */
 contract VulnerableContract {
+    mapping(address => uint256) public balances;
 
-    address public owner;
-    uint public funds;
-
-    mapping(address => uint) public balances;
-    
-    constructor() {
-        owner = msg.sender;
-        funds = 0;
-    }
-
-    // 1. Reentrancy vulnerability: The contract allows a withdrawal that could cause reentrancy.
+    // Accept Ether deposits with no access control or safeguards.
     function deposit() public payable {
-        require(msg.value > 0, "Deposit must be greater than 0");
         balances[msg.sender] += msg.value;
-        funds += msg.value;
     }
 
-    function withdraw(uint amount) public {
-        require(balances[msg.sender] >= amount, "Insufficient balance");
+    // **Vulnerability 1: Reentrancy**
+    function withdraw(uint256 _amount) public {
+        require(balances[msg.sender] >= _amount, "Insufficient balance");
 
-        // Vulnerability: Reentrancy attack can occur here.
-        payable(msg.sender).transfer(amount);
+        // Send funds to the caller before updating the balance.
+        (bool sent, ) = msg.sender.call{value: _amount}("");
+        require(sent, "Transfer failed");
 
-        balances[msg.sender] -= amount;
-        funds -= amount;
+        // Update balance after sending funds.
+        balances[msg.sender] -= _amount;
     }
 
-    // 2. Owner privilege vulnerability: The owner can withdraw all funds from the contract.
+    // **Vulnerability 2: Overflow/Underflow (fixed in Solidity >=0.8.0, but bad practice for older versions)**
+    function unsafeMath(uint256 _value) public pure returns (uint256) {
+        return _value - 1; // No checks for underflow!
+    }
+
+    // **Vulnerability 3: Ownership Issues**
+    address public owner;
+
+    constructor() {
+        owner = msg.sender; // Set the deployer as the owner.
+    }
+
+    function changeOwner(address _newOwner) public {
+        // No checks to ensure only the current owner can change ownership.
+        owner = _newOwner;
+    }
+
+    // **Vulnerability 4: Poor Randomness**
+    function getRandomNumber() public view returns (uint256) {
+        // Predictable randomness using block variables.
+        return uint256(keccak256(abi.encodePacked(block.timestamp, block.difficulty, msg.sender)));
+    }
+
+    // **Vulnerability 5: External Contract Interaction**
+    function callExternalContract(address _contract) public {
+        // Blindly calls an external contract with no checks.
+        (bool success, ) = _contract.call(abi.encodeWithSignature("externalFunction()"));
+        require(success, "External call failed");
+    }
+
+    // **Vulnerability 6: Unrestricted Ether Withdrawals**
     function withdrawAll() public {
-        require(msg.sender == owner, "Only the owner can withdraw all funds");
-        payable(owner).transfer(funds);
-        funds = 0;
+        // Anyone can withdraw all contract funds.
+        payable(msg.sender).transfer(address(this).balance);
     }
 
-    // 3. Integer overflow/underflow vulnerability (unchecked math)
-    function increaseFunds(uint amount) public {
-        // Vulnerability: If amount is large enough, overflow could occur.
-        funds += amount;
-    }
-
-    // 4. Lack of access control: Anyone can change the owner of the contract.
-    function changeOwner(address newOwner) public {
-        owner = newOwner;
-    }
-
-    // 5. Insecure random number generation
-    function generateRandomNumber() public view returns (uint) {
-        // Vulnerability: `block.timestamp` is predictable and can be manipulated by miners.
-        return uint(keccak256(abi.encodePacked(block.timestamp, block.difficulty))) % 100;
-    }
-
-    // 6. Denial of Service (DOS) vulnerability: The contract can be blocked by a single transaction.
-    function blockableFunction() public {
-        require(funds > 0, "No funds available");
-        // Vulnerability: The function can be blocked by sending 0 funds to the contract
-        funds = 0;
-    }
-
-    // 7. Missing input validation
-    function unsafeSet(uint _value) public {
-        // Vulnerability: No checks on the value, anyone can call it and set arbitrary values
-        funds = _value;
-    }
+    // Fallback function to accept Ether with no logging or control.
+    fallback() external payable {}
+    receive() external payable {}
 }
