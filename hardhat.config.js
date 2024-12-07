@@ -23,16 +23,17 @@ module.exports = {
       chainId: 97,
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : []
     },
-    polkadotTestnet: {
-      url: process.env.POLKADOT_TESTNET_URL || "wss://westend-rpc.polkadot.io",
-      chainId: 1000,
+    moonbeamTestnet: {
+      url: process.env.MOONBEAM_TESTNET_URL || "https://rpc.api.moonbase.moonbeam.network",
+      chainId: 1287,
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : []
     }
   },
   etherscan: {
     apiKey: {
       baseSepolia: process.env.BASE_KEY,
-      bscTestnet: process.env.BSC_ETHERSCAN_KEY
+      bscTestnet: process.env.BSC_ETHERSCAN_KEY,
+      moonbeamTestnet: process.env.MOONBEAM_SCAN_API_KEY
     },
     customChains: [
       {
@@ -49,6 +50,14 @@ module.exports = {
         urls: {
           apiURL: "https://api-testnet.bscscan.com/api",
           browserURL: "https://testnet.bscscan.com"
+        }
+      },
+      {
+        network: "moonbeamTestnet",
+        chainId: 1287,
+        urls: {
+          apiURL: "https://api-moonbase.moonscan.io/api",
+          browserURL: "https://moonbase.moonscan.io"
         }
       }
     ]

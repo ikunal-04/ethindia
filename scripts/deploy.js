@@ -19,11 +19,17 @@ async function main() {
 
   try {
     // Network-specific deployment configurations
-    switch(hre.network.name) {
+    switch (hre.network.name) {
       case 'westend':
         // Polkadot Westend Asset Hub specific deployment
         bugHuntr = await BugHuntr.deploy({
           gasLimit: 10000000, // Adjust based on network capabilities
+        });
+        break;
+      case 'moonbeamTestnet':
+        // Moonbeam testnet-specific configuration
+        bugHuntr = await BugHuntr.deploy({
+          gasLimit: 5000000, // Adjust based on Moonbeam's gas requirements
         });
         break;
       default:
@@ -38,24 +44,20 @@ async function main() {
     console.log("✅ BugHuntr.ai deployed to:", deployedAddress);
 
     // Wait for indexing (network-dependent)
-    await new Promise(resolve => setTimeout(resolve, 
+    await new Promise(resolve => setTimeout(resolve,
       hre.network.name === 'westend' ? 60000 : 30000
     ));
 
     // Verification with network-specific handling
     console.log("\n🔍 Starting contract verification...");
     try {
-      switch(hre.network.name) {
+      switch (hre.network.name) {
         case 'westend':
           console.log("⚠️ Verification for Westend Asset Hub may require manual steps");
           break;
         case 'baseSepolia':
-          await hre.run("verify:verify", {
-            address: deployedAddress,
-            constructorArguments: [],
-          });
-          break;
         case 'bscTestnet':
+        case 'moonbeamTestnet':
           await hre.run("verify:verify", {
             address: deployedAddress,
             constructorArguments: [],
@@ -73,12 +75,13 @@ async function main() {
     console.log("\n📝 Deployment Summary:");
     console.log("----------------------");
     console.log("Contract Address:", deployedAddress);
-    
+
     // Network-specific block explorer URLs
     const blockExplorers = {
       'westend': `https://assethub-westend.subscan.io/account/${deployedAddress}`,
       'baseSepolia': `https://base-sepolia.blockscout.com/address/${deployedAddress}`,
-      'bscTestnet': `https://testnet.bscscan.com/address/${deployedAddress}`
+      'bscTestnet': `https://testnet.bscscan.com/address/${deployedAddress}`,
+      'moonbeamTestnet': `https://moonbase.moonscan.io/address/${deployedAddress}`
     };
 
     console.log("Block Explorer:", blockExplorers[hre.network.name] || 'N/A');
@@ -87,7 +90,7 @@ async function main() {
 
   } catch (deploymentError) {
     console.error("❌ Deployment failed:", deploymentError);
-    
+
     // Detailed error logging for different networks
     if (hre.network.name === 'westend') {
       console.error("🔍 Westend-specific deployment error details:");
