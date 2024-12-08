@@ -20,6 +20,9 @@ This README outlines the contract addresses for the various networks and environ
 - **Main Contract Address:** `0x580766a5F69DcdAc5422c3dDAC977D11b3e65c49`
 - **Test Contract Address:** `0xb54a895807ef322190d5F5c99e805B4E24082324`
 
+### EAS (Ethereum Attestation Service)
+- **Schema UID:** `0x27aef44562ff59c454c0f89630dd5fbe8c5b66a07a999060443de311b0c0cdb4`
+
 ---
 
 ## Usage
