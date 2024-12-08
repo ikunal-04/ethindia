@@ -1,1 +1,2 @@
 Contract addresss on BNB: "0xe4B0D5ee6C298B202e2B74CFc5275358A379A5C1"
+For testing the contract: "0x4174C72de549c9482170aDFea4c655738323DA74"
